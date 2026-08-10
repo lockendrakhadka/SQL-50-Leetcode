@@ -1,1 +1,605 @@
+# LeetCode 1667 - Fix Names in a Table
+
+## Problem Statement
+
+### Table: `Users`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| user_id     | int     |
+| name        | varchar |
+
+`user_id` is the primary key (column with unique values) for this table.
+
+This table contains the ID and name of each user. The name consists of only lowercase and uppercase characters.
+
+Write a solution to **fix the names** so that:
+
+* Only the **first character** is uppercase.
+* All the remaining characters are lowercase.
+
+Return the result table ordered by `user_id`.
+
+## Example 1
+
+### Input
+
+```text
+Users table:
++---------+-------+
+| user_id | name  |
++---------+-------+
+| 1       | aLice |
+| 2       | bOB   |
++---------+-------+
+```
+
+### Output
+
+```text
++---------+-------+
+| user_id | name  |
++---------+-------+
+| 1       | Alice |
+| 2       | Bob   |
++---------+-------+
+```
+
+### Explanation
+
+* `aLice` is changed to `Alice`.
+* `bOB` is changed to `Bob`.
+* The result is ordered by `user_id` in ascending order.
+
+Solution:
+select user_id,concat(upper(left(name,1)),
+lower(substring(name,2,length(name)))
+)as name
+from users
+order by user_id;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1527 - Patients With a Condition
+
+## Problem Statement
+
+### Table: `Patients`
+
+| Column Name  | Type    |
+| ------------ | ------- |
+| patient_id   | int     |
+| patient_name | varchar |
+| conditions   | varchar |
+
+`patient_id` is the primary key (column with unique values) for this table.
+
+`conditions` contains zero or more condition codes separated by spaces.
+
+This table contains information about patients in a hospital.
+
+Write a solution to find the `patient_id`, `patient_name`, and `conditions` of patients who have **Type I Diabetes**.
+
+Type I Diabetes always starts with the **`DIAB1`** prefix.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+```text
+Patients table:
++------------+--------------+--------------+
+| patient_id | patient_name | conditions   |
++------------+--------------+--------------+
+| 1          | Daniel       | YFEV COUGH   |
+| 2          | Alice        |              |
+| 3          | Bob          | DIAB100 MYOP |
+| 4          | George       | ACNE DIAB100 |
+| 5          | Alain        | DIAB201      |
++------------+--------------+--------------+
+```
+
+### Output
+
+```text
++------------+--------------+--------------+
+| patient_id | patient_name | conditions   |
++------------+--------------+--------------+
+| 3          | Bob          | DIAB100 MYOP |
+| 4          | George       | ACNE DIAB100 |
++------------+--------------+--------------+
+```
+
+### Explanation
+
+* **Bob** has `DIAB100`, which starts with `DIAB1`.
+* **George** has `DIAB100`, which starts with `DIAB1`.
+* **Alain** has `DIAB201`, which does not start with `DIAB1`.
+* Therefore, Bob and George are included in the result.
+
+Solution:
+select *
+from patients 
+where conditions like 'DIAB1%'
+or conditions like '% DIAB1%';
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 196 - Delete Duplicate Emails
+
+## Problem Statement
+
+### Table: `Person`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| id          | int     |
+| email       | varchar |
+
+`id` is the primary key (column with unique values) for this table.
+
+Each row of this table contains an email. The emails will not contain uppercase letters.
+
+Write a solution to **delete all duplicate emails**, keeping only one unique email with the **smallest `id`**.
+
+For SQL users, write a **`DELETE` statement**, not a `SELECT` statement.
+
+After running the script, the answer shown is the `Person` table.
+
+The final order of the `Person` table does not matter.
+
+## Example 1
+
+### Input
+
+```text
+Person table:
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
+| 3  | john@example.com |
++----+------------------+
+```
+
+### Output
+
+```text
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
++----+------------------+
+```
+
+### Explanation
+
+`john@example.com` appears twice.
+
+We keep the row with the **smallest ID**, which is `id = 1`, and delete the duplicate with `id = 3`.
+
+Solution:
+delete p
+from person as p
+join person as p1
+on p.email=p1.email
+where p.id>p1.id;
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 176 - Second Highest Salary
+
+## Problem Statement
+
+### Table: `Employee`
+
+| Column Name | Type |
+| ----------- | ---- |
+| id          | int  |
+| salary      | int  |
+
+`id` is the primary key (column with unique values) for this table.
+
+Each row of this table contains information about the salary of an employee.
+
+Write a solution to find the **second highest distinct salary** from the `Employee` table.
+
+If there is no second highest salary, return **`null`**.
+
+## Example 1
+
+### Input
+
+```text
+Employee table:
++----+--------+
+| id | salary |
++----+--------+
+| 1  | 100    |
+| 2  | 200    |
+| 3  | 300    |
++----+--------+
+```
+
+### Output
+
+```text
++---------------------+
+| SecondHighestSalary |
++---------------------+
+| 200                 |
++---------------------+
+```
+
+### Explanation
+
+The highest salary is `300`.
+
+The second highest distinct salary is `200`.
+
+---
+
+## Example 2
+
+### Input
+
+```text
+Employee table:
++----+--------+
+| id | salary |
++----+--------+
+| 1  | 100    |
++----+--------+
+```
+
+### Output
+
+```text
++---------------------+
+| SecondHighestSalary |
++---------------------+
+| null                |
++---------------------+
+```
+
+### Explanation
+
+There is only one salary, so there is **no second highest salary**.
+
+
+Solution:
+with cte as(select *,dense_rank() over(order by salary desc) as rn
+from employee)
+select max(salary) as SecondHighestSalary
+from cte where rn=2;
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1484 - Group Sold Products By The Date
+
+## Problem Statement
+
+### Table: `Activities`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| sell_date   | date    |
+| product     | varchar |
+
+There is no primary key for this table, so it may contain duplicate rows.
+
+Each row of this table contains the product name and the date it was sold in a market.
+
+Write a solution to find, for **each date**:
+
+* The number of **different products sold**.
+* The names of the different products sold.
+
+The product names for each date should be sorted in **lexicographical order**.
+
+Return the result table ordered by `sell_date`.
+
+## Example 1
+
+### Input
+
+```text
+Activities table:
++------------+------------+
+| sell_date  | product    |
++------------+------------+
+| 2020-05-30 | Headphone  |
+| 2020-06-01 | Pencil     |
+| 2020-06-02 | Mask       |
+| 2020-05-30 | Basketball |
+| 2020-06-01 | Bible      |
+| 2020-06-02 | Mask       |
+| 2020-05-30 | T-Shirt    |
++------------+------------+
+```
+
+### Output
+
+```text
++------------+----------+------------------------------+
+| sell_date  | num_sold | products                     |
++------------+----------+------------------------------+
+| 2020-05-30 | 3        | Basketball,Headphone,T-shirt |
+| 2020-06-01 | 2        | Bible,Pencil                 |
+| 2020-06-02 | 1        | Mask                         |
++------------+----------+------------------------------+
+```
+
+### Explanation
+
+* For `2020-05-30`, the products sold were `Headphone`, `Basketball`, and `T-Shirt`. They are sorted lexicographically as `Basketball,Headphone,T-shirt`.
+* For `2020-06-01`, the products sold were `Pencil` and `Bible`. They are sorted as `Bible,Pencil`.
+* For `2020-06-02`, only `Mask` was sold. Although `Mask` appears twice, it is counted only once because we need **different products**.
+
+
+Solution:
+select sell_date,
+count(distinct product) as num_sold,
+group_concat(distinct product
+            order by product
+            SEPaRATOR ',') 
+as products
+from activities
+group by sell_date
+order by sell_date;
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1327 - List the Products Ordered in a Period
+
+## Problem Statement
+
+### Table: `Products`
+
+| Column Name      | Type    |
+| ---------------- | ------- |
+| product_id       | int     |
+| product_name     | varchar |
+| product_category | varchar |
+
+`product_id` is the primary key (column with unique values) for this table.
+
+This table contains data about the company's products.
+
+### Table: `Orders`
+
+| Column Name | Type |
+| ----------- | ---- |
+| product_id  | int  |
+| order_date  | date |
+| unit        | int  |
+
+This table may contain duplicate rows.
+
+`product_id` is a foreign key that references the `Products` table.
+
+`unit` is the number of products ordered on `order_date`.
+
+Write a solution to find the **names of products** that have at least **100 units ordered in February 2020**, along with the total number of units ordered.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+```text
+Products table:
++-------------+-----------------------+------------------+
+| product_id  | product_name          | product_category |
++-------------+-----------------------+------------------+
+| 1           | Leetcode Solutions    | Book             |
+| 2           | Jewels of Stringology | Book             |
+| 3           | HP                    | Laptop           |
+| 4           | Lenovo                | Laptop           |
+| 5           | Leetcode Kit          | T-shirt          |
++-------------+-----------------------+------------------+
+
+Orders table:
++--------------+--------------+----------+
+| product_id   | order_date   | unit     |
++--------------+--------------+----------+
+| 1            | 2020-02-05   | 60       |
+| 1            | 2020-02-10   | 70       |
+| 2            | 2020-01-18   | 30       |
+| 2            | 2020-02-11   | 80       |
+| 3            | 2020-02-17   | 2        |
+| 3            | 2020-02-24   | 3        |
+| 4            | 2020-03-01   | 20       |
+| 4            | 2020-03-04   | 30       |
+| 4            | 2020-03-04   | 60       |
+| 5            | 2020-02-25   | 50       |
+| 5            | 2020-02-27   | 50       |
+| 5            | 2020-03-01   | 50       |
++--------------+--------------+----------+
+```
+
+### Output
+
+```text
++--------------------+---------+
+| product_name       | unit    |
++--------------------+---------+
+| Leetcode Solutions | 130     |
+| Leetcode Kit       | 100     |
++--------------------+---------+
+```
+
+### Explanation
+
+* `Leetcode Solutions`: `60 + 70 = 130` units in February.
+* `Jewels of Stringology`: `80` units in February, so it is not included.
+* `HP`: `2 + 3 = 5` units in February, so it is not included.
+* `Lenovo`: No orders were placed in February 2020.
+* `Leetcode Kit`: `50 + 50 = 100` units in February.
+
+Solution:
+select product_name,sum(o.unit) as unit
+from products as p
+join orders as o
+on p.product_id=o.product_id
+where order_date >= '2020-02-01' 
+and order_date < '2020-03-01'
+group by p.product_id,product_name
+having unit>=100;
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1517 - Find Users With Valid E-Mails
+
+## Problem Statement
+
+### Table: `Users`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| user_id     | int     |
+| name        | varchar |
+| mail        | varchar |
+
+`user_id` is the primary key (column with unique values) for this table.
+
+This table contains information about users who signed up on a website. Some emails are invalid.
+
+Write a solution to find the users who have **valid emails**.
+
+A valid email has a **prefix name** and a **domain** where:
+
+### Prefix Name
+
+The prefix name:
+
+* May contain letters (uppercase or lowercase).
+* May contain digits.
+* May contain underscore `_`.
+* May contain period `.`.
+* May contain dash `-`.
+* **Must start with a letter.**
+
+### Domain
+
+The domain must be exactly:
+
+```text
+@leetcode.com
+```
+
+and must be in lowercase.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+```text id="8x6k2p"
+Users table:
++---------+-----------+-------------------------+
+| user_id | name      | mail                    |
++---------+-----------+-------------------------+
+| 1       | Winston   | winston@leetcode.com    |
+| 2       | Jonathan  | jonathanisgreat         |
+| 3       | Annabelle | bella-@leetcode.com     |
+| 4       | Sally     | sally.come@leetcode.com |
+| 5       | Marwan    | quarz#2020@leetcode.com |
+| 6       | David     | david69@gmail.com       |
+| 7       | Shapiro   | .shapo@leetcode.com     |
++---------+-----------+-------------------------+
+```
+
+### Output
+
+```text id="m2j6kq"
++---------+-----------+-------------------------+
+| user_id | name      | mail                    |
++---------+-----------+-------------------------+
+| 1       | Winston   | winston@leetcode.com    |
+| 3       | Annabelle | bella-@leetcode.com     |
+| 4       | Sally     | sally.come@leetcode.com |
++---------+-----------+-------------------------+
+```
+
+### Explanation
+
+* User `1` has a valid email.
+* User `2` is invalid because the email does not have a domain.
+* User `3` has a valid email.
+* User `4` has a valid email.
+* User `5` is invalid because `#` is not an allowed character.
+* User `6` is invalid because the domain is not `@leetcode.com`.
+* User `7` is invalid because the prefix starts with a period instead of a letter.
+
+Therefore, users **1, 3, and 4** are returned.
+
+Solution:
+select *
+from users
+where regexp_like(mail,'^[A-Za-z][A-Za-z0-9_.-]*@leetcode[.]com$','c');
+
+
+
+
 
