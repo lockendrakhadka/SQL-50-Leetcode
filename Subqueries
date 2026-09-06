@@ -1,1 +1,82 @@
+# LeetCode 1978 - Employees Whose Manager Left the Company
+
+## Problem Statement
+
+### Table: `Employees`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| employee_id | int     |
+| name        | varchar |
+| manager_id  | int     |
+| salary      | int     |
+
+In SQL, `employee_id` is the primary key for this table.
+
+This table contains information about employees, their salary, and the ID of their manager.
+
+Some employees do not have a manager (`manager_id` is `NULL`).
+
+Find the IDs of employees who meet **both** of the following conditions:
+
+* Their salary is **strictly less than $30,000**.
+* Their manager **has left the company**.
+
+When a manager leaves the company, their information is deleted from the `Employees` table, but the employees who reported to them still have their `manager_id` set to the manager who left.
+
+Return the result table ordered by `employee_id`.
+
+## Example 1
+
+### Input
+
+```text
+Employees table:
++-------------+-----------+------------+--------+
+| employee_id | name      | manager_id | salary |
++-------------+-----------+------------+--------+
+| 3           | Mila      | 9          | 60301  |
+| 12          | Antonella | null       | 31000  |
+| 13          | Emery     | null       | 67084  |
+| 1           | Kalel     | 11         | 21241  |
+| 9           | Mikaela   | null       | 50937  |
+| 11          | Joziah    | 6          | 28485  |
++-------------+-----------+------------+--------+
+```
+
+### Output
+
+```text
++-------------+
+| employee_id |
++-------------+
+| 1           |
++-------------+
+```
+
+### Explanation
+
+Employee `1` has a salary of `21241`, which is less than `$30000`.
+
+Their `manager_id` is `11`, but employee `11` is not present in the table, meaning their manager has left the company.
+
+Therefore, employee `1` is included in the result.
+
+
+
+
+
+
+Solution:
+
+select employee_id
+from employees 
+where salary<30000
+and manager_id is not null
+and manager_id not in
+(select employee_id
+from employees)
+order by employee_id
+
+
 
