@@ -1,0 +1,576 @@
+# LeetCode 2356 - Number of Unique Subjects Taught by Each Teacher
+
+## Problem Statement
+
+### Table: `Teacher`
+
+| Column Name | Type |
+| ----------- | ---- |
+| teacher_id  | int  |
+| subject_id  | int  |
+| dept_id     | int  |
+
+* `(subject_id, dept_id)` is the primary key, meaning the combination of these columns is unique.
+* Each row indicates that a teacher teaches a particular subject in a particular department.
+
+Write a solution to calculate the **number of unique subjects each teacher teaches** in the university.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Teacher table:**
+
+```text id="c6m2p8"
++------------+------------+---------+
+| teacher_id | subject_id | dept_id |
++------------+------------+---------+
+| 1          | 2          | 3       |
+| 1          | 2          | 4       |
+| 1          | 3          | 3       |
+| 2          | 1          | 1       |
+| 2          | 2          | 1       |
+| 2          | 3          | 1       |
+| 2          | 4          | 1       |
++------------+------------+---------+
+```
+
+### Output
+
+```text id="n9v4k7"
++------------+-----+
+| teacher_id | cnt |
++------------+-----+
+| 1          | 2   |
+| 2          | 4   |
++------------+-----+
+```
+
+### Explanation
+
+* **Teacher 1:**
+
+  * Teaches subject 2 in departments 3 and 4.
+  * Teaches subject 3 in department 3.
+  * Therefore, they teach **2 unique subjects**.
+
+* **Teacher 2:**
+
+  * Teaches subjects 1, 2, 3, and 4.
+  * Therefore, they teach **4 unique subjects**.
+
+
+
+
+Solution:
+
+
+SELECT
+    teacher_id,
+    COUNT(DISTINCT subject_id) AS cnt
+FROM Teacher
+GROUP BY teacher_id;
+
+
+# LeetCode 1141 - User Activity for the Past 30 Days I
+
+## Problem Statement
+
+### Table: `Activity`
+
+| Column Name   | Type |
+| ------------- | ---- |
+| user_id       | int  |
+| session_id    | int  |
+| activity_date | date |
+| activity_type | enum |
+
+* This table may contain duplicate rows.
+* `activity_type` is an ENUM with the following possible values:
+
+  * `open_session`
+  * `end_session`
+  * `scroll_down`
+  * `send_message`
+* The table contains user activity on a social media website.
+* Each session belongs to exactly one user.
+
+Write a solution to find the **daily active user count** for the **30-day period ending on `2019-07-27`**, inclusively.
+
+A user is considered **active on a day** if they performed **at least one activity** on that day.
+
+* Any activity type is considered valid activity.
+* Return the result table in **any order**.
+* Days with **zero active users** should not be included in the result.
+
+## Example 1
+
+### Input
+
+**Activity table:**
+
+```text id="q8m4v2"
++---------+------------+---------------+---------------+
+| user_id | session_id | activity_date | activity_type |
++---------+------------+---------------+---------------+
+| 1       | 1          | 2019-07-20    | open_session  |
+| 1       | 1          | 2019-07-20    | scroll_down   |
+| 1       | 1          | 2019-07-20    | end_session   |
+| 2       | 4          | 2019-07-20    | open_session  |
+| 2       | 4          | 2019-07-21    | send_message  |
+| 2       | 4          | 2019-07-21    | end_session   |
+| 3       | 2          | 2019-07-21    | open_session  |
+| 3       | 2          | 2019-07-21    | send_message  |
+| 3       | 2          | 2019-07-21    | end_session   |
+| 4       | 3          | 2019-06-25    | open_session  |
+| 4       | 3          | 2019-06-25    | end_session   |
++---------+------------+---------------+---------------+
+```
+
+### Output
+
+```text id="p6r9k3"
++------------+--------------+
+| day        | active_users |
++------------+--------------+
+| 2019-07-20 | 2            |
+| 2019-07-21 | 2            |
++------------+--------------+
+```
+
+### Explanation
+
+* On **2019-07-20**, users 1 and 2 were active → **2 active users**.
+* On **2019-07-21**, users 2 and 3 were active → **2 active users**.
+* User 4's activity on `2019-06-25` is outside the 30-day period.
+* Days with no active users are not included.
+
+
+Solution:
+
+
+SELECT
+    activity_date AS day,
+    COUNT(DISTINCT user_id) AS active_users
+FROM Activity
+WHERE activity_date > DATE_SUB('2019-07-27', INTERVAL 30 DAY)
+  AND activity_date <= '2019-07-27'
+GROUP BY activity_date;
+
+
+
+# LeetCode 1070 - Product Sales Analysis III
+
+## Problem Statement
+
+### Table: `Sales`
+
+| Column Name | Type |
+| ----------- | ---- |
+| sale_id     | int  |
+| product_id  | int  |
+| year        | int  |
+| quantity    | int  |
+| price       | int  |
+
+* `(sale_id, year)` is the primary key, meaning the combination of these columns is unique.
+* Each row records a sale of a product in a given year.
+* A product may have multiple sales entries in the same year.
+* The `price` column represents the per-unit price.
+
+Write a solution to find **all sales that occurred in the first year each product was sold**.
+
+For each `product_id`:
+
+1. Identify the **earliest year** it appears in the `Sales` table.
+2. Return **all sales entries** for that product in that year.
+
+Return a table with the following columns:
+
+* `product_id`
+* `first_year`
+* `quantity`
+* `price`
+
+Return the result in **any order**.
+
+## Example 1
+
+### Input
+
+**Sales table:**
+
+```text id="k4p7m2"
++---------+------------+------+----------+-------+
+| sale_id | product_id | year | quantity | price |
++---------+------------+------+----------+-------+
+| 1       | 100        | 2008 | 10       | 5000  |
+| 2       | 100        | 2009 | 12       | 5000  |
+| 7       | 200        | 2011 | 15       | 9000  |
++---------+------------+------+----------+-------+
+```
+
+### Output
+
+```text id="v8n3q6"
++------------+------------+----------+-------+
+| product_id | first_year | quantity | price |
++------------+------------+----------+-------+
+| 100        | 2008       | 10       | 5000  |
+| 200        | 2011       | 15       | 9000  |
++------------+------------+----------+-------+
+```
+
+### Explanation
+
+* **Product 100:** First sold in **2008**, so the sale from 2008 is returned.
+* **Product 200:** First sold in **2011**, so the sale from 2011 is returned.
+* If a product has multiple sales entries in its first year, **all of those entries** should be returned.
+
+
+Solution:
+
+with cte as (select *,
+dense_rank() over(partition by product_id order by year) as rn
+from sales)
+select product_id,year as first_year,quantity,price from cte 
+where rn=1
+
+
+# LeetCode 596 - Classes With at Least 5 Students
+
+## Problem Statement
+
+### Table: `Courses`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| student     | varchar |
+| class       | varchar |
+
+* `(student, class)` is the primary key, meaning the combination of these columns is unique.
+* Each row indicates the name of a student and the class in which they are enrolled.
+
+Write a solution to find all the classes that have **at least five students**.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Courses table:**
+
+```text id="m3k8q5"
++---------+----------+
+| student | class    |
++---------+----------+
+| A       | Math     |
+| B       | English  |
+| C       | Math     |
+| D       | Biology  |
+| E       | Math     |
+| F       | Computer |
+| G       | Math     |
+| H       | Math     |
+| I       | Math     |
++---------+----------+
+```
+
+### Output
+
+```text id="v6p2n9"
++---------+
+| class   |
++---------+
+| Math    |
++---------+
+```
+
+### Explanation
+
+* **Math** has 6 students, so it is included.
+* **English** has 1 student, so it is not included.
+* **Biology** has 1 student, so it is not included.
+* **Computer** has 1 student, so it is not included.
+
+
+Solution:
+
+
+SELECT
+    class
+FROM Courses
+GROUP BY class
+HAVING COUNT(student) >= 5;
+
+
+
+# LeetCode 1729 - Find Followers Count
+
+## Problem Statement
+
+### Table: `Followers`
+
+| Column Name | Type |
+| ----------- | ---- |
+| user_id     | int  |
+| follower_id | int  |
+
+* `(user_id, follower_id)` is the primary key, meaning the combination of these columns is unique.
+* Each row contains the ID of a user and the ID of a follower.
+* A follower follows the user identified by `user_id`.
+
+Write a solution that returns the **number of followers for each user**.
+
+Return the result table ordered by `user_id` in **ascending order**.
+
+## Example 1
+
+### Input
+
+**Followers table:**
+
+```text id="r4m8q2"
++---------+-------------+
+| user_id | follower_id |
++---------+-------------+
+| 0       | 1           |
+| 1       | 0           |
+| 2       | 0           |
+| 2       | 1           |
++---------+-------------+
+```
+
+### Output
+
+```text id="v7n3p6"
++---------+----------------+
+| user_id | followers_count|
++---------+----------------+
+| 0       | 1              |
+| 1       | 1              |
+| 2       | 2              |
++---------+----------------+
+```
+
+### Explanation
+
+* The followers of user **0** are `{1}` → **1 follower**.
+* The followers of user **1** are `{0}` → **1 follower**.
+* The followers of user **2** are `{0, 1}` → **2 followers**.
+
+
+Solution:
+
+
+SELECT
+    user_id,
+    COUNT(follower_id) AS followers_count
+FROM Followers
+GROUP BY user_id
+ORDER BY user_id;
+
+
+
+
+
+# LeetCode 619 - Biggest Single Number
+
+## Problem Statement
+
+### Table: `MyNumbers`
+
+| Column Name | Type |
+| ----------- | ---- |
+| num         | int  |
+
+* This table may contain duplicate values.
+* There is no primary key for this table.
+* Each row contains an integer.
+
+### Definition
+
+A **single number** is a number that appears **exactly once** in the `MyNumbers` table.
+
+Find the **largest single number**.
+
+* If there is no single number, return `NULL`.
+
+## Example 1
+
+### Input
+
+**MyNumbers table:**
+
+```text id="x4m8q2"
++-----+
+| num |
++-----+
+| 8   |
+| 8   |
+| 3   |
+| 3   |
+| 1   |
+| 4   |
+| 5   |
+| 6   |
++-----+
+```
+
+### Output
+
+```text id="n7p3v6"
++-----+
+| num |
++-----+
+| 6   |
++-----+
+```
+
+### Explanation
+
+The single numbers are `1`, `4`, `5`, and `6`.
+
+Since **6** is the largest single number, we return `6`.
+
+## Example 2
+
+### Input
+
+**MyNumbers table:**
+
+```text id="k5r9m3"
++-----+
+| num |
++-----+
+| 8   |
+| 8   |
+| 7   |
+| 7   |
+| 3   |
+| 3   |
+| 3   |
++-----+
+```
+
+### Output
+
+```text id="q2v6p8"
++------+
+| num  |
++------+
+| null |
++------+
+```
+
+### Explanation
+
+There are **no single numbers** in the table, so we return `NULL`.
+
+
+Solution:
+
+
+SELECT MAX(num) AS num
+FROM MyNumbers
+WHERE num IN (
+    SELECT num
+    FROM MyNumbers
+    GROUP BY num
+    HAVING COUNT(*) = 1
+);
+
+
+
+
+
+
+# LeetCode 1045 - Customers Who Bought All Products
+
+## Problem Statement
+
+### Table: `Customer`
+
+| Column Name | Type |
+| ----------- | ---- |
+| customer_id | int  |
+| product_key | int  |
+
+* This table may contain duplicate rows.
+* `customer_id` is not `NULL`.
+* `product_key` is a foreign key referencing the `Product` table.
+
+### Table: `Product`
+
+| Column Name | Type |
+| ----------- | ---- |
+| product_key | int  |
+
+* `product_key` is the primary key, meaning each product has a unique key.
+
+Write a solution to report the **customer IDs** from the `Customer` table who bought **all the products** listed in the `Product` table.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Customer table:**
+
+```text id="m7q3v8"
++-------------+-------------+
+| customer_id | product_key |
++-------------+-------------+
+| 1           | 5           |
+| 2           | 6           |
+| 3           | 5           |
+| 3           | 6           |
+| 1           | 6           |
++-------------+-------------+
+```
+
+**Product table:**
+
+```text id="r4k9p2"
++-------------+
+| product_key |
++-------------+
+| 5           |
+| 6           |
++-------------+
+```
+
+### Output
+
+```text id="v6n2q5"
++-------------+
+| customer_id |
++-------------+
+| 1           |
+| 3           |
++-------------+
+```
+
+### Explanation
+
+The products available in the `Product` table are **5 and 6**.
+
+* **Customer 1** bought products 5 and 6 → bought all products.
+* **Customer 2** bought only product 6 → did not buy all products.
+* **Customer 3** bought products 5 and 6 → bought all products.
+
+Therefore, customers **1 and 3** are returned.
+
+
+Solution:
+
+
+select customer_id
+from customer 
+group by customer_id
+having count(distinct product_key)=
+(select count(*) from product)
