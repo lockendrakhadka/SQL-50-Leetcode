@@ -80,3 +80,720 @@ order by employee_id
 
 
 
+
+
+
+
+
+
+
+
+# LeetCode 626 - Exchange Seats
+
+## Problem Statement
+
+### Table: `Seat`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| id          | int     |
+| student     | varchar |
+
+* `id` is the primary key, meaning each student has a unique seat ID.
+* Each row contains the name and ID of a student.
+* The `id` sequence always starts from `1` and increments continuously.
+
+Write a solution to **swap the seat IDs of every two consecutive students**.
+
+* Student at ID `1` swaps with ID `2`.
+* Student at ID `3` swaps with ID `4`.
+* Continue this pattern for all consecutive pairs.
+* If the number of students is **odd**, the last student's ID is **not swapped**.
+* Return the result table ordered by `id` in **ascending order**.
+
+## Example 1
+
+### Input
+
+**Seat table:**
+
+```text id="m7q3v8"
++----+---------+
+| id | student |
++----+---------+
+| 1  | Abbot   |
+| 2  | Doris   |
+| 3  | Emerson |
+| 4  | Green   |
+| 5  | Jeames  |
++----+---------+
+```
+
+### Output
+
+```text id="p6r9k2"
++----+---------+
+| id | student |
++----+---------+
+| 1  | Doris   |
+| 2  | Abbot   |
+| 3  | Green   |
+| 4  | Emerson |
+| 5  | Jeames  |
++----+---------+
+```
+
+### Explanation
+
+* Students at IDs **1 and 2** swap seats.
+* Students at IDs **3 and 4** swap seats.
+* There are an odd number of students, so the student at ID **5** remains in the same seat.
+
+
+
+
+
+Solution:
+
+SELECT 
+    id, 
+    CASE 
+        
+        WHEN id % 2 = 0 THEN LAG(student) OVER (ORDER BY id)
+        
+        ELSE COALESCE(LEAD(student) OVER (ORDER BY id), student)
+    END AS student
+FROM Seat;
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1341 - Movie Rating
+
+## Problem Statement
+
+### Table: `Movies`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| movie_id    | int     |
+| title       | varchar |
+
+* `movie_id` is the primary key, meaning each movie has a unique ID.
+* `title` is the name of the movie.
+* Each movie has a unique title.
+
+### Table: `Users`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| user_id     | int     |
+| name        | varchar |
+
+* `user_id` is the primary key, meaning each user has a unique ID.
+* `name` contains unique values.
+
+### Table: `MovieRating`
+
+| Column Name | Type |
+| ----------- | ---- |
+| movie_id    | int  |
+| user_id     | int  |
+| rating      | int  |
+| created_at  | date |
+
+* `(movie_id, user_id)` is the primary key, meaning each movie-user combination is unique.
+* Each row contains a user's rating for a movie.
+* `created_at` is the date when the user submitted the review.
+
+Write a solution to:
+
+1. Find the **name of the user who has rated the greatest number of movies**.
+
+   * In case of a tie, return the **lexicographically smaller** user name.
+
+2. Find the **movie name with the highest average rating in February 2020**.
+
+   * In case of a tie, return the **lexicographically smaller** movie name.
+
+The result should contain the answers as separate rows under the column `results`.
+
+## Example 1
+
+### Input
+
+**Movies table:**
+
+```text id="m5q8v2"
++-------------+--------------+
+| movie_id    | title        |
++-------------+--------------+
+| 1           | Avengers     |
+| 2           | Frozen 2     |
+| 3           | Joker        |
++-------------+--------------+
+```
+
+**Users table:**
+
+```text id="r7k3p9"
++-------------+--------------+
+| user_id     | name         |
++-------------+--------------+
+| 1           | Daniel       |
+| 2           | Monica       |
+| 3           | Maria        |
+| 4           | James        |
++-------------+--------------+
+```
+
+**MovieRating table:**
+
+```text id="n4v6q8"
++-------------+--------------+--------+-------------+
+| movie_id    | user_id      | rating | created_at  |
++-------------+--------------+--------+-------------+
+| 1           | 1            | 3      | 2020-01-12  |
+| 1           | 2            | 4      | 2020-02-11  |
+| 1           | 3            | 2      | 2020-02-12  |
+| 1           | 4            | 1      | 2020-01-01  |
+| 2           | 1            | 5      | 2020-02-17  |
+| 2           | 2            | 2      | 2020-02-01  |
+| 2           | 3            | 2      | 2020-03-01  |
+| 3           | 1            | 3      | 2020-02-22  |
+| 3           | 2            | 4      | 2020-02-25  |
++-------------+--------------+--------+-------------+
+```
+
+### Output
+
+```text id="p2m9r5"
++--------------+
+| results      |
++--------------+
+| Daniel       |
+| Frozen 2     |
++--------------+
+```
+
+### Explanation
+
+* **Daniel** and **Monica** have each rated **3 movies**.
+* `Daniel` is lexicographically smaller than `Monica`, so **Daniel** is selected.
+
+For February 2020:
+
+* **Frozen 2** has an average rating of `(5 + 2) / 2 = 3.5`.
+* **Joker** has an average rating of `(3 + 4) / 2 = 3.5`.
+* Both have the same average rating, but **Frozen 2** is lexicographically smaller than **Joker**.
+
+Therefore, the results are **Daniel** and **Frozen 2**.
+
+
+
+
+
+
+
+
+Solution:
+
+
+(SELECT u.name AS results
+ FROM MovieRating as mr
+ JOIN Users as u 
+ ON mr.user_id = u.user_id
+ GROUP BY mr.user_id
+ ORDER BY COUNT(mr.movie_id) DESC, u.name ASC
+ LIMIT 1)
+
+UNION ALL
+
+
+(SELECT m.title AS results
+ FROM MovieRating mr
+ JOIN Movies m ON mr.movie_id = m.movie_id
+ WHERE mr.created_at BETWEEN '2020-02-01' AND '2020-02-29'
+ GROUP BY mr.movie_id
+ ORDER BY AVG(mr.rating) DESC, m.title ASC
+ LIMIT 1);
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1321 - Restaurant Growth
+
+## Problem Statement
+
+### Table: `Customer`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| customer_id | int     |
+| name        | varchar |
+| visited_on  | date    |
+| amount      | int     |
+
+* `(customer_id, visited_on)` is the primary key, meaning the combination of customer and visit date is unique.
+* The table contains data about customer transactions at a restaurant.
+* `visited_on` is the date when the customer visited the restaurant.
+* `amount` is the total amount paid by the customer.
+* There is guaranteed to be at least one customer every day.
+
+Write a solution to calculate the **seven-day moving average** of customer spending.
+
+The seven-day window includes:
+
+* The current day.
+* The previous 6 days.
+
+Return:
+
+* `visited_on`
+* The total `amount` paid during the seven-day window.
+* `average_amount`, rounded to **2 decimal places**.
+
+Return the result table ordered by `visited_on` in **ascending order**.
+
+## Example 1
+
+### Input
+
+**Customer table:**
+
+```text id="q8m4v2"
++-------------+--------------+--------------+-------------+
+| customer_id | name         | visited_on   | amount      |
++-------------+--------------+--------------+-------------+
+| 1           | Jhon         | 2019-01-01   | 100         |
+| 2           | Daniel       | 2019-01-02   | 110         |
+| 3           | Jade         | 2019-01-03   | 120         |
+| 4           | Khaled       | 2019-01-04   | 130         |
+| 5           | Winston      | 2019-01-05   | 110         |
+| 6           | Elvis        | 2019-01-06   | 140         |
+| 7           | Anna         | 2019-01-07   | 150         |
+| 8           | Maria        | 2019-01-08   | 80          |
+| 9           | Jaze         | 2019-01-09   | 110         |
+| 1           | Jhon         | 2019-01-10   | 130         |
+| 3           | Jade         | 2019-01-10   | 150         |
++-------------+--------------+--------------+-------------+
+```
+
+### Output
+
+```text id="p6r9k3"
++--------------+--------+----------------+
+| visited_on   | amount | average_amount |
++--------------+--------+----------------+
+| 2019-01-07   | 860    | 122.86         |
+| 2019-01-08   | 840    | 120            |
+| 2019-01-09   | 840    | 120            |
+| 2019-01-10   | 1000   | 142.86         |
++--------------+--------+----------------+
+```
+
+### Explanation
+
+* **2019-01-07:** Seven-day window is `2019-01-01` to `2019-01-07`.
+
+  * Total = `100 + 110 + 120 + 130 + 110 + 140 + 150 = 860`
+  * Average = `860 / 7 = 122.86`
+
+* **2019-01-08:** Seven-day window is `2019-01-02` to `2019-01-08`.
+
+  * Total = `840`
+  * Average = `840 / 7 = 120`
+
+* **2019-01-09:** Seven-day window is `2019-01-03` to `2019-01-09`.
+
+  * Total = `840`
+  * Average = `840 / 7 = 120`
+
+* **2019-01-10:** Seven-day window is `2019-01-04` to `2019-01-10`.
+
+  * Total = `130 + 110 + 140 + 150 + 80 + 110 + 130 + 150 = 1000`
+  * Average = `1000 / 7 = 142.86`
+
+
+
+
+
+
+
+Solution:
+
+
+
+WITH daily AS
+(
+    SELECT
+        visited_on,
+        SUM(amount) AS amount
+    FROM Customer
+    GROUP BY visited_on
+),
+moving AS
+(
+    SELECT
+        visited_on,
+        SUM(amount) OVER (
+            ORDER BY visited_on
+            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+        ) AS total_amount
+    FROM daily
+)
+SELECT
+    visited_on,
+    total_amount AS amount,
+    ROUND(total_amount / 7, 2) AS average_amount
+FROM moving
+WHERE visited_on >= (
+    SELECT DATE_ADD(MIN(visited_on), INTERVAL 6 DAY)
+    FROM Customer
+)
+ORDER BY visited_on;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 602 - Friend Requests II: Who Has the Most Friends
+
+## Problem Statement
+
+### Table: `RequestAccepted`
+
+| Column Name  | Type |
+| ------------ | ---- |
+| requester_id | int  |
+| accepter_id  | int  |
+| accept_date  | date |
+
+* `(requester_id, accepter_id)` is the primary key, meaning the combination of these columns is unique.
+* The table contains the ID of the person who sent the friend request, the ID of the person who received it, and the date when the request was accepted.
+
+Write a solution to find the **person who has the most friends** and the **number of friends** they have.
+
+* The test cases are generated so that only one person has the most friends.
+* Return the result with the columns `id` and `num`.
+
+## Example 1
+
+### Input
+
+```text
+RequestAccepted table:
++--------------+-------------+-------------+
+| requester_id | accepter_id | accept_date |
++--------------+-------------+-------------+
+| 1            | 2           | 2016/06/03  |
+| 1            | 3           | 2016/06/08  |
+| 2            | 3           | 2016/06/08  |
+| 3            | 4           | 2016/06/09  |
++--------------+-------------+-------------+
+```
+
+### Output
+
+```text
++----+-----+
+| id | num |
++----+-----+
+| 3  | 3   |
++----+-----+
+```
+
+### Explanation
+
+Person `3` is friends with people `1`, `2`, and `4`, so they have **3 friends**, which is the highest number of friends among all people.
+
+
+
+
+
+
+
+
+
+Solution:
+
+
+
+SELECT id, COUNT(*) AS num
+FROM (
+    SELECT requester_id AS id
+    FROM RequestAccepted
+
+    UNION ALL
+
+    SELECT accepter_id AS id
+    FROM RequestAccepted
+) AS friends
+GROUP BY id
+ORDER BY num DESC
+LIMIT 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 585 - Investments in 2016
+
+## Problem Statement
+
+### Table: `Insurance`
+
+| Column Name | Type  |
+| ----------- | ----- |
+| pid         | int   |
+| tiv_2015    | float |
+| tiv_2016    | float |
+| lat         | float |
+| lon         | float |
+
+* `pid` is the primary key, meaning each policy ID is unique.
+* Each row contains information about one insurance policy.
+* `tiv_2015` is the total investment value in 2015.
+* `tiv_2016` is the total investment value in 2016.
+* `lat` and `lon` represent the policyholder's city location.
+* `lat` and `lon` are guaranteed to be non-NULL.
+
+Write a solution to find the **sum of `tiv_2016`** for all policyholders who satisfy **both** conditions:
+
+1. Their `tiv_2015` value is the same as one or more other policyholders.
+2. Their `(lat, lon)` location is unique and is not shared by any other policyholder.
+
+Round the final `tiv_2016` sum to **two decimal places**.
+
+## Example 1
+
+### Input
+
+```text
+Insurance table:
++-----+----------+----------+-----+-----+
+| pid | tiv_2015 | tiv_2016 | lat | lon |
++-----+----------+----------+-----+-----+
+| 1   | 10       | 5        | 10  | 10  |
+| 2   | 20       | 20       | 20  | 20  |
+| 3   | 10       | 30       | 20  | 20  |
+| 4   | 10       | 40       | 40  | 40  |
++-----+----------+----------+-----+-----+
+```
+
+### Output
+
+```text
++----------+
+| tiv_2016 |
++----------+
+| 45.00    |
++----------+
+```
+
+### Explanation
+
+* Policy `1` qualifies because its `tiv_2015` value `10` is shared by policies `3` and `4`, and its location `(10, 10)` is unique.
+* Policy `4` also qualifies because its `tiv_2015` value `10` is shared by other policyholders, and its location `(40, 40)` is unique.
+* Policy `3` does not qualify because its location `(20, 20)` is shared with policy `2`.
+* Policy `2` does not qualify because its `tiv_2015` value `20` is unique.
+
+Therefore, the sum is:
+
+`5 + 40 = 45.00`
+
+
+
+
+
+
+
+
+
+Solution:
+
+
+
+SELECT ROUND(SUM(tiv_2016), 2) AS tiv_2016
+FROM Insurance
+WHERE tiv_2015 IN (
+    SELECT tiv_2015
+    FROM Insurance
+    GROUP BY tiv_2015
+    HAVING COUNT(*) > 1
+)
+AND (lat, lon) IN (
+    SELECT lat, lon
+    FROM Insurance
+    GROUP BY lat, lon
+    HAVING COUNT(*) = 1
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 185 - Department Top Three Salaries
+
+## Problem Statement
+
+### Table: `Employee`
+
+| Column Name  | Type    |
+| ------------ | ------- |
+| id           | int     |
+| name         | varchar |
+| salary       | int     |
+| departmentId | int     |
+
+* `id` is the primary key, meaning each employee ID is unique.
+* `departmentId` is a foreign key referencing the `id` column in the `Department` table.
+* Each row represents an employee, including their ID, name, salary, and department.
+
+### Table: `Department`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| id          | int     |
+| name        | varchar |
+
+* `id` is the primary key, meaning each department ID is unique.
+* Each row represents a department and its name.
+
+A **high earner** in a department is an employee whose salary is among the **top three unique salaries** in that department.
+
+Write a solution to find all high earners in each department.
+
+* If multiple employees have the same salary, they should all be included.
+* Salaries are ranked based on **unique salary values**.
+* Return the result in any order.
+
+## Example 1
+
+### Input
+
+```text id="j7m2pk"
+Employee table:
++----+-------+--------+--------------+
+| id | name  | salary | departmentId |
++----+-------+--------+--------------+
+| 1  | Joe   | 85000  | 1            |
+| 2  | Henry | 80000  | 2            |
+| 3  | Sam   | 60000  | 2            |
+| 4  | Max   | 90000  | 1            |
+| 5  | Janet | 69000  | 1            |
+| 6  | Randy | 85000  | 1            |
+| 7  | Will  | 70000  | 1            |
++----+-------+--------+--------------+
+
+Department table:
++----+-------+
+| id | name  |
++----+-------+
+| 1  | IT    |
+| 2  | Sales |
++----+-------+
+```
+
+### Output
+
+```text id="q8v3nm"
++------------+----------+--------+
+| Department | Employee | Salary |
++------------+----------+--------+
+| IT         | Max      | 90000  |
+| IT         | Joe      | 85000  |
+| IT         | Randy    | 85000  |
+| IT         | Will     | 70000  |
+| Sales      | Henry    | 80000  |
+| Sales      | Sam     | 60000  |
++------------+----------+--------+
+```
+
+### Explanation
+
+#### IT Department
+
+* `90000` → highest unique salary → Max
+* `85000` → second-highest unique salary → Joe and Randy
+* `70000` → third-highest unique salary → Will
+
+Therefore, all four employees are high earners.
+
+#### Sales Department
+
+* `80000` → highest salary → Henry
+* `60000` → second-highest salary → Sam
+* There is no third-highest salary because the department has only two unique salaries.
+
+## Constraints
+
+* There are no employees with the exact same `name`, `salary`, and `department`.
+
+
+
+
+
+
+
+
+Solution:
+
+
+
+
+
+SELECT
+    d.name AS Department,
+    e.name AS Employee,
+    e.salary AS Salary
+FROM Employee e
+JOIN Department d
+    ON e.departmentId = d.id
+WHERE 3 > (
+    SELECT COUNT(DISTINCT e2.salary)
+    FROM Employee e2
+    WHERE e2.departmentId = e.departmentId
+      AND e2.salary > e.salary
+);
