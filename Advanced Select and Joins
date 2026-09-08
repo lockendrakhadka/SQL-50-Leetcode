@@ -1,0 +1,626 @@
+# LeetCode 1731 - The Number of Employees Which Report to Each Employee
+
+## Problem Statement
+
+### Table: `Employees`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| employee_id | int     |
+| name        | varchar |
+| reports_to  | int     |
+| age         | int     |
+
+* `employee_id` contains unique values.
+* The table contains information about employees and the ID of the manager they report to.
+* Some employees do not report to anyone, in which case `reports_to` is `NULL`.
+
+### Definition
+
+A **manager** is an employee who has at least **1 other employee reporting directly to them**.
+
+Write a solution to report:
+
+* The `employee_id` of each manager.
+* The manager's `name`.
+* The number of employees who **report directly** to them.
+* The average age of their direct reports, rounded to the **nearest integer**.
+
+Return the result table ordered by `employee_id`.
+
+## Example 1
+
+### Input
+
+**Employees table:**
+
+```text id="p6k2m9"
++-------------+---------+------------+-----+
+| employee_id | name    | reports_to | age |
++-------------+---------+------------+-----+
+| 9           | Hercy   | null       | 43  |
+| 6           | Alice   | 9          | 41  |
+| 4           | Bob     | 9          | 36  |
+| 2           | Winston | null       | 37  |
++-------------+---------+------------+-----+
+```
+
+### Output
+
+```text id="v8q4r3"
++-------------+-------+---------------+-------------+
+| employee_id | name  | reports_count | average_age |
++-------------+-------+---------------+-------------+
+| 9           | Hercy | 2             | 39          |
++-------------+-------+---------------+-------------+
+```
+
+### Explanation
+
+Hercy has **2 employees** reporting directly to him: Alice and Bob.
+
+Their average age is:
+
+`(41 + 36) / 2 = 38.5`
+
+Rounded to the nearest integer, the average age is **39**.
+
+## Example 2
+
+### Input
+
+**Employees table:**
+
+```text id="n5m7p2"
++-------------+---------+------------+-----+
+| employee_id | name    | reports_to | age |
++-------------+---------+------------+-----+
+| 1           | Michael | null       | 45  |
+| 2           | Alice   | 1          | 38  |
+| 3           | Bob     | 1          | 42  |
+| 4           | Charlie | 2          | 34  |
+| 5           | David   | 2          | 40  |
+| 6           | Eve     | 3          | 37  |
+| 7           | Frank   | null       | 50  |
+| 8           | Grace   | null       | 48  |
++-------------+---------+------------+-----+
+```
+
+### Output
+
+```text id="q9v3k6"
++-------------+---------+---------------+-------------+
+| employee_id | name    | reports_count | average_age |
++-------------+---------+---------------+-------------+
+| 1           | Michael | 2             | 40          |
+| 2           | Alice   | 2             | 37          |
+| 3           | Bob     | 1             | 37          |
++-------------+---------+---------------+-------------+
+```
+
+
+
+Solution:
+
+
+SELECT
+    m.employee_id,
+    m.name,
+    COUNT(e.employee_id) AS reports_count,
+    ROUND(AVG(e.age), 0) AS average_age
+FROM Employees m
+JOIN Employees e
+    ON m.employee_id = e.reports_to
+GROUP BY
+    m.employee_id,
+    m.name
+ORDER BY
+    m.employee_id;
+
+
+
+
+# LeetCode 1789 - Primary Department for Each Employee
+
+## Problem Statement
+
+### Table: `Employee`
+
+| Column Name   | Type    |
+| ------------- | ------- |
+| employee_id   | int     |
+| department_id | int     |
+| primary_flag  | varchar |
+
+* `(employee_id, department_id)` is the primary key, meaning the combination of these columns is unique.
+* `employee_id` is the ID of the employee.
+* `department_id` is the ID of the department to which the employee belongs.
+* `primary_flag` is an ENUM with two possible values:
+
+  * `Y` — the department is the employee's primary department.
+  * `N` — the department is not the employee's primary department.
+
+Employees can belong to multiple departments. When an employee belongs to multiple departments, they choose one department as their **primary department**.
+
+If an employee belongs to **only one department**, their `primary_flag` is `N`, but that department should still be considered their primary department.
+
+Write a solution to report all employees with their **primary department**.
+
+* For employees who belong to only one department, report their only department.
+* Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Employee table:**
+
+```text id="k6p2m8"
++-------------+---------------+--------------+
+| employee_id | department_id | primary_flag |
++-------------+---------------+--------------+
+| 1           | 1             | N            |
+| 2           | 1             | Y            |
+| 2           | 2             | N            |
+| 3           | 3             | N            |
+| 4           | 2             | N            |
+| 4           | 3             | Y            |
+| 4           | 4             | N            |
++-------------+---------------+--------------+
+```
+
+### Output
+
+```text id="v9r4q7"
++-------------+---------------+
+| employee_id | department_id |
++-------------+---------------+
+| 1           | 1             |
+| 2           | 1             |
+| 3           | 3             |
+| 4           | 3             |
++-------------+---------------+
+```
+
+### Explanation
+
+* **Employee 1:** Belongs to only department 1 → primary department is **1**.
+* **Employee 2:** Primary flag is `Y` for department 1 → primary department is **1**.
+* **Employee 3:** Belongs to only department 3 → primary department is **3**.
+* **Employee 4:** Primary flag is `Y` for department 3 → primary department is **3**.
+
+
+
+Solution:
+
+
+select employee_id,department_id
+from employee
+where primary_flag='Y'
+
+union
+
+select employee_id,max(department_id)
+from employee
+group by employee_id
+having count(*)=1
+
+
+
+
+
+
+
+
+
+# LeetCode 610 - Triangle Judgement
+
+## Problem Statement
+
+### Table: `Triangle`
+
+| Column Name | Type |
+| ----------- | ---- |
+| x           | int  |
+| y           | int  |
+| z           | int  |
+
+* `(x, y, z)` is the primary key, meaning the combination of these columns is unique.
+* Each row contains the lengths of three line segments.
+
+Write a solution to determine for **each row** whether the three line segments can form a **triangle**.
+
+Return the result table in **any order**.
+
+### Triangle Rule
+
+Three line segments can form a triangle if the sum of **any two sides is greater than the third side**.
+
+## Example 1
+
+### Input
+
+**Triangle table:**
+
+```text id="m8q3v6"
++----+----+----+
+| x  | y  | z  |
++----+----+----+
+| 13 | 15 | 30 |
+| 10 | 20 | 15 |
++----+----+----+
+```
+
+### Output
+
+```text id="r5k9p2"
++----+----+----+----------+
+| x  | y  | z  | triangle |
++----+----+----+----------+
+| 13 | 15 | 30 | No       |
+| 10 | 20 | 15 | Yes      |
++----+----+----+----------+
+```
+
+
+
+Solution:
+
+
+select x,y,z,
+case 
+when x+y>z and x+z>y and z+y>x
+then 'Yes' else 'No' end as triangle
+from Triangle
+
+
+
+
+
+
+
+
+
+# LeetCode 180 - Consecutive Numbers
+
+## Problem Statement
+
+### Table: `Logs`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| id          | int     |
+| num         | varchar |
+
+* `id` is the primary key of the table.
+* `id` is an auto-increment column starting from `1`.
+
+Find all numbers that appear **at least three times consecutively** based on the `id` order.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Logs table:**
+
+```text id="k7m3p9"
++----+-----+
+| id | num |
++----+-----+
+| 1  | 1   |
+| 2  | 1   |
+| 3  | 1   |
+| 4  | 2   |
+| 5  | 1   |
+| 6  | 2   |
+| 7  | 2   |
++----+-----+
+```
+
+### Output
+
+```text id="v4q8n2"
++-----------------+
+| ConsecutiveNums |
++-----------------+
+| 1               |
++-----------------+
+```
+
+### Explanation
+
+The number **1** appears consecutively at IDs **1, 2, and 3**, so it is included.
+
+The other numbers do not appear consecutively at least three times.
+
+Therefore, **1** is the only number returned.
+
+
+Solution:
+
+
+SELECT DISTINCT l1.num AS ConsecutiveNums
+FROM Logs l1
+JOIN Logs l2
+    ON l2.id = l1.id + 1
+JOIN Logs l3
+    ON l3.id = l1.id + 2
+WHERE l1.num = l2.num
+  AND l2.num = l3.num;
+
+
+
+
+
+
+
+
+
+
+
+# LeetCode 1164 - Product Price at a Given Date
+
+## Problem Statement
+
+### Table: `Products`
+
+| Column Name | Type |
+| ----------- | ---- |
+| product_id  | int  |
+| new_price   | int  |
+| change_date | date |
+
+* `(product_id, change_date)` is the primary key, meaning the combination of these columns is unique.
+* Each row indicates that the price of a product was changed to a new price on a specific date.
+
+Initially, **all products have a price of 10**.
+
+Write a solution to find the **price of every product on `2019-08-16`**.
+
+Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Products table:**
+
+```text id="p6m2q8"
++------------+-----------+-------------+
+| product_id | new_price | change_date |
++------------+-----------+-------------+
+| 1          | 20        | 2019-08-14  |
+| 2          | 50        | 2019-08-14  |
+| 1          | 30        | 2019-08-15  |
+| 1          | 35        | 2019-08-16  |
+| 2          | 65        | 2019-08-17  |
+| 3          | 20        | 2019-08-18  |
++------------+-----------+-------------+
+```
+
+### Output
+
+```text id="v9r4k3"
++------------+-------+
+| product_id | price |
++------------+-------+
+| 2          | 50    |
+| 1          | 35    |
+| 3          | 10    |
++------------+-------+
+```
+
+### Explanation
+
+* **Product 1:** Its latest price change on or before `2019-08-16` is `35` → price is **35**.
+* **Product 2:** Its latest price change on or before `2019-08-16` is `50` → price is **50**.
+* **Product 3:** Its first price change occurs after `2019-08-16`, so its price remains the initial **10**.
+
+
+Solution:
+
+
+select distinct p.product_id,
+ ifnull((
+    select new_price 
+    from products as p1
+    where p1.product_id=p.product_id
+    and change_date <='2019-08-16'
+    order by p1.change_date desc
+    limit 1),10
+) as price
+from products as p
+
+
+
+
+
+
+
+
+
+# LeetCode 1204 - Last Person to Fit in the Bus
+
+## Problem Statement
+
+### Table: `Queue`
+
+| Column Name | Type    |
+| ----------- | ------- |
+| person_id   | int     |
+| person_name | varchar |
+| weight      | int     |
+| turn        | int     |
+
+* `person_id` contains unique values.
+* The `person_id` and `turn` columns contain all numbers from `1` to `n`, where `n` is the number of rows.
+* `turn` determines the boarding order:
+
+  * `turn = 1` → first person to board.
+  * `turn = n` → last person to board.
+* `weight` represents the person's weight in kilograms.
+
+There is a queue of people waiting to board a bus.
+
+The bus has a **weight limit of 1000 kilograms**, so some people may not be able to board.
+
+Write a solution to find the **`person_name` of the last person who can fit on the bus** without the total weight exceeding `1000` kilograms.
+
+* The test cases guarantee that the first person does not exceed the weight limit.
+* Only **one person can board the bus at each turn**.
+
+## Example 1
+
+### Input
+
+**Queue table:**
+
+```text id="m8q4v2"
++-----------+-------------+--------+------+
+| person_id | person_name | weight | turn |
++-----------+-------------+--------+------+
+| 5         | Alice       | 250    | 1    |
+| 4         | Bob         | 175    | 5    |
+| 3         | Alex        | 350    | 2    |
+| 6         | John Cena   | 400    | 3    |
+| 1         | Winston     | 500    | 6    |
+| 2         | Marie       | 200    | 4    |
++-----------+-------------+--------+------+
+```
+
+### Output
+
+```text id="p6r9k3"
++-------------+
+| person_name |
++-------------+
+| John Cena   |
++-------------+
+```
+
+### Explanation
+
+Ordering the table by `turn`:
+
+| Turn | ID | Name      | Weight | Total Weight |
+| ---: | -: | --------- | -----: | -----------: |
+|    1 |  5 | Alice     |    250 |          250 |
+|    2 |  3 | Alex      |    350 |          600 |
+|    3 |  6 | John Cena |    400 |         1000 |
+|    4 |  2 | Marie     |    200 |         1200 |
+|    5 |  4 | Bob       |    175 |            — |
+|    6 |  1 | Winston   |    500 |            — |
+
+* Alice boards → total weight = **250**
+* Alex boards → total weight = **600**
+* John Cena boards → total weight = **1000**
+* Marie cannot board because the total would become **1200**
+
+Therefore, **John Cena** is the last person who can fit on the bus.
+
+
+Solution:
+
+select person_name 
+from (select person_name,
+       sum(weight) over(order by turn) as total_weight
+       from queue) as q
+where total_weight <=1000
+order by total_weight desc
+limit 1;
+
+
+
+
+
+
+
+
+# LeetCode 1907 - Count Salary Categories
+
+## Problem Statement
+
+### Table: `Accounts`
+
+| Column Name | Type |
+| ----------- | ---- |
+| account_id  | int  |
+| income      | int  |
+
+* `account_id` is the primary key, meaning each account has a unique ID.
+* Each row contains information about the monthly income of one bank account.
+
+### Salary Categories
+
+Bank accounts are divided into three salary categories:
+
+* **Low Salary**: Income **strictly less than `$20,000`**.
+* **Average Salary**: Income in the **inclusive range `$20,000` to `$50,000`**.
+* **High Salary**: Income **strictly greater than `$50,000`**.
+
+Write a solution to calculate the **number of bank accounts in each salary category**.
+
+* The result **must contain all three categories**.
+* If there are no accounts in a category, return **`0`**.
+* Return the result table in **any order**.
+
+## Example 1
+
+### Input
+
+**Accounts table:**
+
+```text id="k5m8q2"
++------------+--------+
+| account_id | income |
++------------+--------+
+| 3          | 108939 |
+| 2          | 12747  |
+| 8          | 87709  |
+| 6          | 91796  |
++------------+--------+
+```
+
+### Output
+
+```text id="v7r3p9"
++----------------+----------------+
+| category       | accounts_count |
++----------------+----------------+
+| Low Salary     | 1              |
+| Average Salary | 0              |
+| High Salary    | 3              |
++----------------+----------------+
+```
+
+### Explanation
+
+* **Low Salary:** Account 2 has an income of `12,747` → **1 account**.
+* **Average Salary:** No accounts have income between `$20,000` and `$50,000` → **0 accounts**.
+* **High Salary:** Accounts 3, 6, and 8 have incomes greater than `$50,000` → **3 accounts**.
+
+
+
+Solution:
+
+
+select 'Low Salary' as category,
+count(*) as accounts_count
+from accounts 
+where income < 20000
+
+union all
+
+select 'Average Salary' as category,
+count(*) as accounts_count
+from accounts
+where income between 20000 and 50000
+
+union all
+
+select 'High Salary' as category,
+count(*) as accounts_count
+from accounts
+where income > 50000
